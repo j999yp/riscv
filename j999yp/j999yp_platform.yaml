@@ -1,0 +1,4 @@
+nmi:
+  label: nmi_vector
+reset:
+  address: 0x00000000
