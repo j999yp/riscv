@@ -43,10 +43,8 @@ module Execute_Unit (
     output [4:0] o_mau_rd,
     output [`XLEN-1:0] o_mau_res,
 
-    input [4:0] i_mau_bypass_reg_0,
-    input [4:0] i_mau_bypass_reg_1,
-    input [`XLEN-1:0] i_mau_bypass_data_0,
-    input [`XLEN-1:0] i_mau_bypass_data_1,
+    input [4:0] i_mau_bypass_reg,
+    input [`XLEN-1:0] i_mau_bypass_data,
     input [4:0] i_mau_reg_not_ready,
     input i_mau_sig_load_x0,
 
@@ -101,8 +99,8 @@ module Execute_Unit (
         opcode_buffer <= op_nop;
         // flush_flag <= 0;
       end else begin
-        rs1_data_buffer <= (i_du_rs1 == 0 | o_du_stall) ? 0 : (i_du_rs1 == rd_buffer) ? res : (i_du_rs1 == i_mau_bypass_reg_0) ? i_mau_bypass_data_0 : (i_du_rs1 == i_mau_bypass_reg_1) ? i_mau_bypass_data_1 : (i_du_rs1 == i_wb_bypass_reg) ? i_wb_bypass_data : i_reg_data1;
-        rs2_data_buffer <= (i_du_rs2 == 0 | o_du_stall) ? 0 : (i_du_rs2 == rd_buffer) ? res : (i_du_rs2 == i_mau_bypass_reg_0) ? i_mau_bypass_data_0 : (i_du_rs2 == i_mau_bypass_reg_1) ? i_mau_bypass_data_1 : (i_du_rs2 == i_wb_bypass_reg) ? i_wb_bypass_data : i_reg_data2;
+        rs1_data_buffer <= (i_du_rs1 == 0 | o_du_stall) ? 0 : (i_du_rs1 == rd_buffer) ? res : (i_du_rs1 == i_mau_bypass_reg) ? i_mau_bypass_data : (i_du_rs1 == i_wb_bypass_reg) ? i_wb_bypass_data : i_reg_data1;
+        rs2_data_buffer <= (i_du_rs2 == 0 | o_du_stall) ? 0 : (i_du_rs2 == rd_buffer) ? res : (i_du_rs2 == i_mau_bypass_reg) ? i_mau_bypass_data : (i_du_rs2 == i_wb_bypass_reg) ? i_wb_bypass_data : i_reg_data2;
 
         rs1_buffer <= o_du_stall ? 0 : i_du_rs1;
         rs2_buffer <= o_du_stall ? 0 : i_du_rs2;
@@ -197,7 +195,6 @@ module Execute_Unit (
   assign o_mau_write_en = opcode_buffer == op_sb | opcode_buffer == op_sh | opcode_buffer == op_sw;
   assign o_mau_rd = rd_buffer;
   assign o_mau_res = res;
-  assign o_du_stall = (i_mau_reg_not_ready == i_du_rs1 & i_mau_reg_not_ready != 0) | (i_mau_reg_not_ready == i_du_rs2 & i_mau_reg_not_ready != 0) |
-   i_fu_sig_align_error | i_mau_sig_load_x0 | (load_flag & (rd_buffer == i_du_rs1 | rd_buffer == i_du_rs2));
+  assign o_du_stall = i_fu_sig_align_error | i_mau_sig_load_x0 | (load_flag & (rd_buffer == i_du_rs1 | rd_buffer == i_du_rs2));
 
 endmodule

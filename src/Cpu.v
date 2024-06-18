@@ -7,9 +7,9 @@ module Cpu (
     input dump_mem
 );
 
-  wire [31:0] fu_mem_pc, mem_fu_inst, mem_fu_addr, fu_du_inst, fu_du_addr, exec_fu_pc, du_exec_pc, du_exec_imm, reg_exec_data1, reg_exec_data2, exec_mau_addr_r, exec_mau_addr_w, exec_mau_data_w, exec_mau_res, mau_exec_bypass_data_0, mau_exec_bypass_data_1, wb_exec_res, mau_mem_addr_r, mem_mau_data_r, mau_mem_addr_w, mau_mem_data_w, mau_wb_res, wb_reg_data;
+  wire [31:0] fu_mem_pc, mem_fu_inst, mem_fu_addr, fu_du_inst, fu_du_addr, exec_fu_pc, du_exec_pc, du_exec_imm, reg_exec_data1, reg_exec_data2, exec_mau_addr_r, exec_mau_addr_w, exec_mau_data_w, exec_mau_res, mau_exec_bypass_data, wb_exec_res, mau_mem_addr_r, mem_mau_data_r, mau_mem_addr_w, mau_mem_data_w, mau_wb_res, wb_reg_data;
 
-  wire [4:0] du_reg_rs1, du_reg_rs2, du_exec_rs1, du_exec_rs2, du_exec_rd, du_exec_opcode, exec_mau_rd, mau_exec_bypass_reg_0, mau_exec_bypass_reg_1, mau_exec_reg_not_ready, wb_exec_bypass_reg, mau_wb_rd, wb_reg_rd;
+  wire [4:0] du_reg_rs1, du_reg_rs2, du_exec_rs1, du_exec_rs2, du_exec_rd, du_exec_opcode, exec_mau_rd, mau_exec_bypass_reg, wb_exec_bypass_reg, mau_wb_rd, wb_reg_rd;
 
   wire [1:0] du_exec_src2_type, exec_mau_len_r, exec_mau_len_w, mau_mem_len_w;
 
@@ -80,11 +80,8 @@ module Cpu (
       .o_mau_write_en(exec_mau_write_en),
       .o_mau_rd(exec_mau_rd),
       .o_mau_res(exec_mau_res),
-      .i_mau_bypass_reg_0(mau_exec_bypass_reg_0),
-      .i_mau_bypass_reg_1(mau_exec_bypass_reg_1),
-      .i_mau_bypass_data_0(mau_exec_bypass_data_0),
-      .i_mau_bypass_data_1(mau_exec_bypass_data_1),
-      .i_mau_reg_not_ready(mau_exec_reg_not_ready),
+      .i_mau_bypass_reg(mau_exec_bypass_reg),
+      .i_mau_bypass_data(mau_exec_bypass_data),
       .i_mau_sig_load_x0(mau_exec_sig_load_x0),
       .i_wb_bypass_reg(wb_exec_bypass_reg),
       .i_wb_bypass_data(wb_exec_res),
@@ -104,11 +101,8 @@ module Cpu (
       .i_exec_write_en(exec_mau_write_en),
       .i_exec_rd(exec_mau_rd),
       .i_exec_res(exec_mau_res),
-      .o_exec_bypass_reg_0(mau_exec_bypass_reg_0),
-      .o_exec_bypass_reg_1(mau_exec_bypass_reg_1),
-      .o_exec_bypass_data_0(mau_exec_bypass_data_0),
-      .o_exec_bypass_data_1(mau_exec_bypass_data_1),
-      .o_exec_reg_not_ready(mau_exec_reg_not_ready),
+      .o_exec_bypass_reg(mau_exec_bypass_reg),
+      .o_exec_bypass_data(mau_exec_bypass_data),
       .o_exec_sig_load_x0(mau_exec_sig_load_x0),
       .o_mem_addr_r(mau_mem_addr_r),
       .i_mem_data_r(mem_mau_data_r),
