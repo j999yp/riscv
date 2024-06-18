@@ -5,16 +5,16 @@
 
 |branch taken|should branch|nop|
 |:-:|:-:|:-:|
-|√|√|1|
-|√|×|4|
-|×|√|4|
+|√|√|2|
+|√|×|5|
+|×|√|5|
 |×|×|0|
 
-- 指令和数据存放在同一内存里（冯诺依曼结构），为了方便做了不同的读取接口，其中inst为async，data为sync
-- Fetch使用两个时钟周期（若将inst read也改为sync，则需三个周期，且需要改变读取逻辑）
-- Memory Access使用两个时钟周期（配合sync memory read）
+- 指令和数据存放在同一内存里（冯诺依曼结构），包含指令读取接口、数据读取接口、数据存储接口，三者都为sync
+- Fetch使用三个时钟周期（fu---pc--->mem, mem---inst--->inst_buffer, inst_buffer---inst--->du）
+- Memory Access使用两个时钟周期（ex---addr--->mem, mem---data--->ma）
 - 实现了ex->ex, ma->ex, wb->ex的bypassing，不会导致流水线中断
-- 使用iverilog仿真，verilator暂未测试
+- 使用iverilog仿真，留出内存接口方便verilator仿真
 - 通过riscof合规性测试
 
 # 参考文档
