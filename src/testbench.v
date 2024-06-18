@@ -22,7 +22,7 @@ end
     rstn = 0;
     dump_mem = 0;
     #1 rstn = 1;
-    #100000 dump_mem = 1;
+    #200000 dump_mem = 1;
     #5 $finish();
   end
 

@@ -20,6 +20,11 @@ module Fetch_Unit (
     output reg o_exec_sig_align_error
 );
 
+  reg flush_flag;
+  initial begin
+    flush_flag = 1;
+  end
+
   // pc declaration
   reg [`XLEN-1:0] pc = `init_pc;
   reg [`XLEN-1:0] pc_add_4;
@@ -40,19 +45,18 @@ module Fetch_Unit (
   end
 
   // branch status buffer
-  reg branch_taken_buf[1:0];
+  reg branch_taken_buf;
   initial begin
-    branch_taken_buf[0] = 0;
-    branch_taken_buf[1] = 0;
+    branch_taken_buf = 0;
   end
 
   // assign to output
   always @(*) begin
-    o_mem_pc = pc;
+    o_mem_pc = i_du_stall ? pc - 4 : pc;
     o_du_inst = inst_buf[1];
     o_du_addr = addr_buf[1];
     pc_add_4 = pc + `XLEN'd4;
-    o_du_branch_taken = branch_taken_buf[1];
+    o_du_branch_taken = branch_taken_buf;
   end
 
   // branch prediction
@@ -90,10 +94,12 @@ module Fetch_Unit (
       addr_buf[0] <= `invalid_pc;
       addr_buf[1] <= `invalid_pc;
       o_exec_sig_align_error <= 0;
+      flush_flag <= 1;
     end else begin
       if (i_exec_flush) begin
         addr_buf[0] <= `invalid_pc;
         addr_buf[1] <= `invalid_pc;
+        flush_flag  <= 1;
 
         if (i_exec_pc[1:0] != 2'b0) begin
           pc <= `trap;
@@ -106,10 +112,16 @@ module Fetch_Unit (
         pc <= branch_pc;
         addr_buf[1] <= addr_buf[0];
         addr_buf[0] <= `invalid_pc;
+        flush_flag <= 1;
       end else if (i_du_stall) begin
         pc <= pc;
         addr_buf[0] <= addr_buf[0];
         addr_buf[1] <= addr_buf[1];
+      end else if (flush_flag) begin
+        pc <= pc_add_4;
+        addr_buf[1] <= addr_buf[0];
+        addr_buf[0] <= `invalid_pc;
+        flush_flag <= 0;
       end else begin
         pc <= pc_add_4;
         addr_buf[1] <= addr_buf[0];
@@ -133,6 +145,9 @@ module Fetch_Unit (
       end else if (i_du_stall) begin
         inst_buf[0] <= inst_buf[0];
         inst_buf[1] <= inst_buf[1];
+      end else if (flush_flag) begin
+        inst_buf[1] <= inst_buf[0];
+        inst_buf[0] <= `nop;
       end else begin
         inst_buf[1] <= inst_buf[0];
         inst_buf[0] <= i_mem_inst;
@@ -143,18 +158,14 @@ module Fetch_Unit (
   // branch buffer logic
   always @(posedge clk or negedge rstn) begin
     if (!rstn) begin
-      branch_taken_buf[0] <= 0;
-      branch_taken_buf[1] <= 0;
+      branch_taken_buf <= 0;
     end else begin
       if (i_exec_flush) begin
-        branch_taken_buf[0] <= 0;
-        branch_taken_buf[1] <= 0;
+        branch_taken_buf <= 0;
       end else if (i_du_stall) begin
-        branch_taken_buf[0] <= branch_taken_buf[0];
-        branch_taken_buf[1] <= branch_taken_buf[1];
+        branch_taken_buf <= branch_taken_buf;
       end else begin
-        branch_taken_buf[1] <= branch_taken_buf[0];
-        branch_taken_buf[0] <= branch_taken;
+        branch_taken_buf <= branch_taken;
       end
     end
   end
