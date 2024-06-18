@@ -47,22 +47,27 @@ module Decode_Unit (
   // data buffer
   reg [`ILEN-1:0] inst_buf;
   reg [`XLEN-1:0] addr_buf;
+  reg branch_taken_buf;
 
   // obtain data from Fetch Unit
   always @(posedge clk or negedge rstn) begin
     if (!rstn) begin
       inst_buf <= `nop;
       addr_buf <= `invalid_pc;
+      branch_taken_buf <= 0;
     end else begin
       if (i_exec_flush) begin
         inst_buf <= `nop;
         addr_buf <= `invalid_pc;
+        branch_taken_buf <= 0;
       end else if (i_exec_stall) begin
         inst_buf <= inst_buf;
         addr_buf <= addr_buf;
+        branch_taken_buf <= branch_taken_buf;
       end else begin
         inst_buf <= i_fu_inst;
         addr_buf <= i_fu_addr;
+        branch_taken_buf <= i_fu_branch_taken;
       end
     end
   end
@@ -110,7 +115,7 @@ module Decode_Unit (
     o_reg_rs1 = rs1;
     o_reg_rs2 = rs2;
 
-    o_exec_branch_taken = i_fu_branch_taken;
+    o_exec_branch_taken = branch_taken_buf;
     o_exec_rs1 = rs1;
     o_exec_rs2 = rs2;
     o_exec_rd = (is_B_type | is_S_type) ? 0 : rd;
