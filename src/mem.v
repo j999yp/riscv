@@ -8,6 +8,7 @@ module mem (
     output reg [`ILEN-1:0] inst,
     output reg [`XLEN-1:0] o_inst_addr,
     // sync data read, require 2 cycles to read. always return 32 bits
+    input data_r_en,
     input [`XLEN-1:0] data_addr_r,
     output reg [`XLEN-1:0] data_r,
     // sync data write
@@ -38,7 +39,11 @@ module mem (
   always @(posedge clk) begin
     inst <= {mem[i_inst_addr+3], mem[i_inst_addr+2], mem[i_inst_addr+1], mem[i_inst_addr]};
     o_inst_addr <= i_inst_addr;
-    data_r <= {mem[data_addr_r+3], mem[data_addr_r+2], mem[data_addr_r+1], mem[data_addr_r]};
+
+    if (data_r_en) begin
+      data_r <= {mem[data_addr_r+3], mem[data_addr_r+2], mem[data_addr_r+1], mem[data_addr_r]};
+    end
+
     if (data_w_en) begin
       // $display("addr:%h, data:%h, len:%d", data_addr_w, data_w, data_len_w);
       case (data_len_w)

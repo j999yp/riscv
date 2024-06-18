@@ -4,23 +4,32 @@
 module Cpu (
     input clk,
     input rstn,
-    input dump_mem
+    output [`XLEN-1:0] pc,
+    input [`ILEN-1:0] inst,
+    input [`XLEN-1:0] pc_copy,
+    output read_en,
+    output [`XLEN-1:0] read_addr,
+    input [`XLEN-1:0] read_data,
+    output write_en,
+    output [`XLEN-1:0] write_addr,
+    output [`XLEN-1:0] write_data,
+    output [1:0] write_len
 );
 
-  wire [31:0] fu_mem_pc, mem_fu_inst, mem_fu_addr, fu_du_inst, fu_du_addr, exec_fu_pc, du_exec_pc, du_exec_imm, reg_exec_data1, reg_exec_data2, exec_mau_addr_r, exec_mau_addr_w, exec_mau_data_w, exec_mau_res, mau_exec_bypass_data, wb_exec_res, mau_mem_addr_r, mem_mau_data_r, mau_mem_addr_w, mau_mem_data_w, mau_wb_res, wb_reg_data;
+  wire [31:0] fu_du_inst, fu_du_addr, exec_fu_pc, du_exec_pc, du_exec_imm, reg_exec_data1, reg_exec_data2, exec_mau_addr_r, exec_mau_addr_w, exec_mau_data_w, exec_mau_res, mau_exec_bypass_data, wb_exec_res, mau_wb_res, wb_reg_data;
 
   wire [4:0] du_reg_rs1, du_reg_rs2, du_exec_rs1, du_exec_rs2, du_exec_rd, du_exec_opcode, exec_mau_rd, mau_exec_bypass_reg, wb_exec_bypass_reg, mau_wb_rd, wb_reg_rd;
 
-  wire [1:0] du_exec_src2_type, exec_mau_len_r, exec_mau_len_w, mau_mem_len_w;
+  wire [1:0] du_exec_src2_type, exec_mau_len_r, exec_mau_len_w;
 
-  wire fu_du_branch_taken,du_fu_stall,exec_fu_flush,fu_exec_align_error,exec_du_stall,exec_du_flush,du_exec_branch_taken,du_exec_is_load,exec_mau_is_signed,exec_mau_read_en,exec_mau_write_en,mau_exec_sig_load_x0,mau_mem_write_en,wb_reg_write_en;
+  wire fu_du_branch_taken,du_fu_stall,exec_fu_flush,fu_exec_align_error,exec_du_stall,exec_du_flush,du_exec_branch_taken,du_exec_is_load,exec_mau_is_signed,exec_mau_read_en,exec_mau_write_en,mau_exec_sig_load_x0,wb_reg_write_en;
 
   Fetch_Unit fetch_unit_inst (
       .clk(clk),
       .rstn(rstn),
-      .o_mem_pc(fu_mem_pc),
-      .i_mem_inst(mem_fu_inst),
-      .i_mem_addr(mem_fu_addr),
+      .o_mem_pc(pc),
+      .i_mem_inst(inst),
+      .i_mem_addr(pc_copy),
       .o_du_inst(fu_du_inst),
       .o_du_addr(fu_du_addr),
       .o_du_branch_taken(fu_du_branch_taken),
@@ -104,14 +113,15 @@ module Cpu (
       .o_exec_bypass_reg(mau_exec_bypass_reg),
       .o_exec_bypass_data(mau_exec_bypass_data),
       .o_exec_sig_load_x0(mau_exec_sig_load_x0),
-      .o_mem_addr_r(mau_mem_addr_r),
-      .i_mem_data_r(mem_mau_data_r),
-      .o_mem_addr_w(mau_mem_addr_w),
-      .o_mem_data_w(mau_mem_data_w),
-      .o_mem_len_w(mau_mem_len_w),
-      .o_mem_write_en(mau_mem_write_en),
+      .o_mem_addr_r(read_addr),
+      .i_mem_data_r(read_data),
+      .o_mem_addr_w(write_addr),
+      .o_mem_data_w(write_data),
+      .o_mem_len_w(write_len),
+      .o_mem_write_en(write_en),
       .o_wb_rd(mau_wb_rd),
-      .o_wb_res(mau_wb_res)
+      .o_wb_res(mau_wb_res),
+      .o_mem_read_en(read_en)
   );
 
   Write_Back_Unit write_back_unit_inst (
@@ -136,20 +146,6 @@ module Cpu (
       .i_wb_write_en(wb_reg_write_en),
       .i_wb_rd(wb_reg_rd),
       .i_wb_data(wb_reg_data)
-  );
-
-  mem mem_inst (
-      .clk(clk),
-      .i_inst_addr(fu_mem_pc),
-      .inst(mem_fu_inst),
-      .o_inst_addr(mem_fu_addr),
-      .data_addr_r(mau_mem_addr_r),
-      .data_r(mem_mau_data_r),
-      .data_w_en(mau_mem_write_en),
-      .data_addr_w(mau_mem_addr_w),
-      .data_w(mau_mem_data_w),
-      .data_len_w(mau_mem_len_w),
-      .dump_mem(dump_mem)
   );
 
 endmodule
